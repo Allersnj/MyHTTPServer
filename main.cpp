@@ -68,16 +68,15 @@ int main()
 	}
 	
 	char recvbuf[DEFAULT_BUFLEN];
-	char message[8] = "hello\r\n";
 	int iSendResult;
-	std::chrono::time_point<std::chrono::steady_clock> start;
 	
-	bool newTimer = true;
 	do
 	{
-		if (newTimer)
+		iResult = recv(ClientSocket, recvbuf, DEFAULT_BUFLEN, 0);
+		if (iResult > 0)
 		{
-			iSendResult = send(ClientSocket, message, 8, 0);
+			std::cout << "Bytes received: " << iResult << '\n';
+			iSendResult = send(ClientSocket, recvbuf, iResult, 0);
 			if (iSendResult == SOCKET_ERROR)
 			{
 				std::cout << "send failed: " << WSAGetLastError() << '\n';
@@ -86,19 +85,20 @@ int main()
 				return 1;
 			}
 			std::cout << "Bytes sent: " << iSendResult << '\n';
-			start = std::chrono::steady_clock::now();
-			newTimer = false;
+		}
+		else if (iResult == 0)
+		{
+			std::cout << "Connection closing...\n";
 		}
 		else
 		{
-			auto end = std::chrono::steady_clock::now();
-			auto timePassed = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-			if (timePassed.count() >= 10.0)
-			{
-				newTimer = true;
-			}
-		}	
-	} while (iSendResult > 0);
+			std::cout << "recv failed: " << WSAGetLastError() << '\n';
+			closesocket(ClientSocket);
+			WSACleanup();
+			return 1;
+		}
+			
+	} while (iResult > 0);
 	
 	iResult = shutdown(ClientSocket, SD_SEND);
 	if (iResult == SOCKET_ERROR)
