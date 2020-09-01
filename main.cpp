@@ -1,5 +1,7 @@
 #include <iostream>
-#include <chrono>
+#include <string>
+#include <sstream>
+#include <map>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -9,6 +11,10 @@
 int main()
 {
 	WSADATA wsaData;
+	std::map<std::string, std::string> dictionary;
+	dictionary["red"] = "A color";
+	dictionary["puppy"] = "A young dog";
+	
 	int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 	if (iResult != 0)
 	{
@@ -69,6 +75,8 @@ int main()
 	
 	char recvbuf[DEFAULT_BUFLEN];
 	int iSendResult;
+	std::string command;
+	std::string resultStr;
 	
 	do
 	{
@@ -76,15 +84,80 @@ int main()
 		if (iResult > 0)
 		{
 			std::cout << "Bytes received: " << iResult << '\n';
-			iSendResult = send(ClientSocket, recvbuf, iResult, 0);
-			if (iSendResult == SOCKET_ERROR)
+			recvbuf[iResult] = 0; // Always null-terminate your strings.
+			std::stringstream stream{recvbuf};
+			stream >> command;
+			if (command == "GET")
 			{
-				std::cout << "send failed: " << WSAGetLastError() << '\n';
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
+				stream >> command;
+				std::cout << command << '\n';
+				if (dictionary.count(command))
+				{
+					resultStr = "ANSWER " + dictionary[command] + "\r\n";
+				}
+				else
+				{
+					resultStr = "ERROR can't find " + command + "\r\n";
+				}
+				iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+			    if (iSendResult == SOCKET_ERROR)
+			    {
+				    std::cout << "send failed: " << WSAGetLastError() << '\n';
+				    closesocket(ClientSocket);
+				    WSACleanup();
+				    return 1;
+			    }
+			    std::cout << "Bytes sent: " << iSendResult << '\n';
 			}
-			std::cout << "Bytes sent: " << iSendResult << '\n';
+			else if (command == "SET")
+			{
+				stream >> command;
+				stream.get();
+				stream.getline(recvbuf, DEFAULT_BUFLEN, 0);
+				dictionary[command] = recvbuf;
+			}
+			else if (command == "CLEAR")
+			{
+				dictionary.clear();
+			}
+			else if (command == "ALL")
+			{
+				for (const auto& [key, value] : dictionary)
+				{
+					resultStr = key + ": " + value + "\r\n";
+					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+			        if (iSendResult == SOCKET_ERROR)
+			        {
+				        std::cout << "send failed: " << WSAGetLastError() << '\n';
+				        closesocket(ClientSocket);
+				        WSACleanup();
+				        return 1;
+			        }
+			        std::cout << "Bytes sent: " << iSendResult << '\n';
+				}
+			}
+			else if (command == "")
+			{
+				//std::cout << "Ignoring empty command...\n";
+			}
+			else if (command == "QUIT")
+			{
+				break;
+			}
+			else
+			{
+				resultStr = "ERROR unknown command\r\n";
+				iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+			    if (iSendResult == SOCKET_ERROR)
+			    {
+				    std::cout << "send failed: " << WSAGetLastError() << '\n';
+				    closesocket(ClientSocket);
+				    WSACleanup();
+				    return 1;
+			    }
+			    std::cout << "Bytes sent: " << iSendResult << '\n';
+			}
+			command = "";
 		}
 		else if (iResult == 0)
 		{
