@@ -8,21 +8,15 @@
 #define DEFAULT_PORT "27015"
 #define DEFAULT_BUFLEN 512
 
-int main()
+int init()
 {
 	WSADATA wsaData;
-	std::map<std::string, std::string> dictionary;
-	dictionary["red"] = "A color";
-	dictionary["puppy"] = "A young dog";
-	
-	int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-	if (iResult != 0)
-	{
-		std::cout << "WSAStartup failed: " << iResult << '\n';
-		return 1;
-	}
-	
-	struct addrinfo *result = NULL, *ptr = NULL, hints;
+	return WSAStartup(MAKEWORD(2,2), &wsaData);
+}
+
+SOCKET getListenSocket()
+{
+	struct addrinfo *result = NULL, hints;
 	
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
@@ -30,12 +24,12 @@ int main()
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
 	
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	int iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 	if (iResult != 0)
 	{
 		std::cout << "getaddrinfo failed: " << iResult << '\n';
 		WSACleanup();
-		return 1;
+		return INVALID_SOCKET;
 	}
 	
 	SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
@@ -43,7 +37,7 @@ int main()
 	{
 		std::cout << "Error at socket(): " << WSAGetLastError() << '\n';
 		WSACleanup();
-		return 1;
+		return INVALID_SOCKET;
 	}
 	
 	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
@@ -53,7 +47,7 @@ int main()
 		freeaddrinfo(result);
 		closesocket(ListenSocket);
 		WSACleanup();
-		return 1;
+		return INVALID_SOCKET;
 	}
 	
 	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR)
@@ -61,8 +55,27 @@ int main()
 		std::cout << "Listen failed with error: " << WSAGetLastError() << '\n';
 		closesocket(ListenSocket);
 		WSACleanup();
+		return INVALID_SOCKET;
+	}
+	
+	return ListenSocket;
+}
+
+int main()
+{
+	
+	std::map<std::string, std::string> dictionary;
+	dictionary["red"] = "A color";
+	dictionary["puppy"] = "A young dog";
+	
+	int iResult = init();
+	if (iResult != 0)
+	{
+		std::cout << "WSAStartup failed: " << iResult << '\n';
 		return 1;
 	}
+	
+	SOCKET ListenSocket = getListenSocket();
 	
 	SOCKET ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET)
@@ -90,7 +103,6 @@ int main()
 			if (command == "GET")
 			{
 				stream >> command;
-				std::cout << command << '\n';
 				if (dictionary.count(command))
 				{
 					resultStr = "ANSWER " + dictionary[command] + "\r\n";
