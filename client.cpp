@@ -5,9 +5,21 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#define DEFAULT_PORT "27015"
+#define DEFAULT_PORT "8080"
 #define DEFAULT_BUFLEN 512
 
+/** @file client.cpp
+ *  @brief An automated client for testing the server.
+ *
+ *  This client serves as a tester for the server. It has some utility functions for this purpose. Main runs the tests.
+ */
+ 
+ /**
+  * @brief Tests a command against the server.
+  * @param ConnectSocket The socket representing the connection to the server.
+  * @param command The command to test.
+  * @param response The expected response from the server.
+  */
 int test_command(SOCKET ConnectSocket, std::string_view command, std::string_view response)
 {
 	char recvbuf[DEFAULT_BUFLEN];
@@ -31,6 +43,12 @@ int test_command(SOCKET ConnectSocket, std::string_view command, std::string_vie
 	return iResult;
 }
 
+/**
+ * @brief An overload to test multiple commands.
+ * @param ConnectSocket The socket representing the connection to the server.
+ * @param command The command to test.
+ * @param responses The expected responses from the server.
+ */
 int test_command(SOCKET ConnectSocket, std::string_view command, const std::vector<std::string_view>& responses)
 {
 	char recvbuf[DEFAULT_BUFLEN];
@@ -58,6 +76,9 @@ int test_command(SOCKET ConnectSocket, std::string_view command, const std::vect
 	return iResult;
 }
 
+/**
+ * @brief It's main, man. Sets up and cleans up Winsock, and tests the commands.
+ */
 int main()
 {
 	WSADATA wsaData;

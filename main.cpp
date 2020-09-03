@@ -7,22 +7,41 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#define DEFAULT_PORT "27015"
+#define DEFAULT_PORT "8080"
 #define DEFAULT_BUFLEN 512
 
+/** @file main.cpp
+ *  @brief The source for the main server.
+ *
+ *  This is where the magic happens. The main loop for the server and some helper functions are in here.
+ */
+
+
+/** 
+ * This is the dictionary to hold definitions for access by clients.
+ */
 std::map<std::string, std::string> dictionary;
+
+/** 
+ * This mutex protects the dictionary from simultaneous access.
+ */
 std::mutex dictionary_mutex;
 
+/**
+ * This function contains the boilerplate Winsock code to create a socket that listens for clients.
+ * @return the socket that listens for clients.
+ */
 SOCKET getListenSocket()
 {
 	struct addrinfo *result = NULL, hints;
 	
 	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
+	hints.ai_family = AF_INET;       // IPv4
+	hints.ai_socktype = SOCK_STREAM; // Streaming socket
+	hints.ai_protocol = IPPROTO_TCP; // TCP/IP
+	hints.ai_flags = AI_PASSIVE;     // Socket will be bound to an address.
 	
+	// Get the addresses of the server.
 	int iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 	if (iResult != 0)
 	{
@@ -60,7 +79,11 @@ SOCKET getListenSocket()
 	return ListenSocket;
 }
 
-int serve(SOCKET ClientSocket)
+
+/** This function is what handles each client's commands.
+ * @param ClientSocket the socket representing the connection to the client.
+ */
+void serve(SOCKET ClientSocket)
 {
 	char recvbuf[DEFAULT_BUFLEN];
 	int iResult, iSendResult;
@@ -77,6 +100,7 @@ int serve(SOCKET ClientSocket)
 			std::cout << "Bytes received: " << iResult << '\n';
 			recvbuf[iResult] = 0; // Always null-terminate your strings.
 			std::stringstream stream{recvbuf};
+			// Make sure multiple commands from one recv are accounted for.
 			while (stream >> command)
 			{
 				if (command == "GET")
@@ -97,7 +121,7 @@ int serve(SOCKET ClientSocket)
 						std::cout << "send failed: " << WSAGetLastError() << '\n';
 						closesocket(ClientSocket);
 						WSACleanup();
-						return 1;
+						return;
 					}
 					std::cout << "Bytes sent: " << iSendResult << '\n';
 				}
@@ -126,7 +150,7 @@ int serve(SOCKET ClientSocket)
 							std::cout << "send failed: " << WSAGetLastError() << '\n';
 							closesocket(ClientSocket);
 							WSACleanup();
-							return 1;
+							return;
 						}
 						std::cout << "Bytes sent: " << iSendResult << '\n';
 					}
@@ -141,7 +165,7 @@ int serve(SOCKET ClientSocket)
 								std::cout << "send failed: " << WSAGetLastError() << '\n';
 								closesocket(ClientSocket);
 								WSACleanup();
-								return 1;
+								return;
 							}
 							std::cout << "Bytes sent: " << iSendResult << '\n';
 						}
@@ -160,7 +184,7 @@ int serve(SOCKET ClientSocket)
 						std::cout << "send failed: " << WSAGetLastError() << '\n';
 						closesocket(ClientSocket);
 						WSACleanup();
-						return 1;
+						return;
 					}
 					iResult = shutdown(ClientSocket, SD_BOTH);
 					if (iResult == SOCKET_ERROR)
@@ -168,7 +192,7 @@ int serve(SOCKET ClientSocket)
 						std::cout << "shutdown failed with error: " << WSAGetLastError() << '\n';
 						closesocket(ClientSocket);
 						WSACleanup();
-						return 1;
+						return;
 					}
 					quit = true;
 					break;
@@ -182,7 +206,7 @@ int serve(SOCKET ClientSocket)
 						std::cout << "send failed: " << WSAGetLastError() << '\n';
 						closesocket(ClientSocket);
 						WSACleanup();
-						return 1;
+						return;
 					}
 					std::cout << "Bytes sent: " << iSendResult << '\n';
 				}
@@ -198,7 +222,7 @@ int serve(SOCKET ClientSocket)
 			std::cout << "recv failed: " << WSAGetLastError() << '\n';
 			closesocket(ClientSocket);
 			WSACleanup();
-			return 1;
+			return;
 		}
 			
 	} while (iResult > 0 && !quit);
@@ -206,10 +230,12 @@ int serve(SOCKET ClientSocket)
 	std::cout << "Connection closed.\n";
 	
 	closesocket(ClientSocket);
-	
-	return 0;
 }
 
+
+/** 
+ * This is main, man. It sets up initial values for the dictionary, intializes and cleans up Winsock, and starts the loop to accept connections.
+ */
 int main()
 {
 	dictionary["red"] = "A color";
