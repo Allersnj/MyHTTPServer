@@ -158,7 +158,31 @@ int main()
 	
 	// Run tests here
 	
-	iResult = send_command(ConnectSocket, "GET / HTTP/1.1\r\n");
+	iResult = test_command(ConnectSocket, "GET /test.txt HTTP/1.1\r\n", "HTTP/1.0 200 OK\r\nContent-Length: 37\r\nServer: Custom C++ (Windows)\r\nContent-Type: text/plain;charset=UTF-8\r\n\r\nThis is a test, for lots of reasons.\n");
+	if (iResult == SOCKET_ERROR)
+	{
+		closesocket(ConnectSocket);
+		WSACleanup();
+		return 1;
+	}
+	
+	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\n", "HTTP/1.0 200 OK\r\nContent-Length: 51\r\nServer: Custom C++ (Windows)\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n<h1>Testing...</h1>\n<a href=\"test.txt\">Click me</a>");
+	if (iResult == SOCKET_ERROR)
+	{
+		closesocket(ConnectSocket);
+		WSACleanup();
+		return 1;
+	}
+	
+	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\nthing1: thing2\r\n\r\n", "HTTP/1.0 200 OK\r\nContent-Length: 51\r\nServer: Custom C++ (Windows)\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n<h1>Testing...</h1>\n<a href=\"test.txt\">Click me</a>");
+	if (iResult == SOCKET_ERROR)
+	{
+		closesocket(ConnectSocket);
+		WSACleanup();
+		return 1;
+	}
+	
+	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\nthing1 thing2\r\n\r\n", "HTTP/1.1 400 Bad Request\r\n");
 	if (iResult == SOCKET_ERROR)
 	{
 		closesocket(ConnectSocket);
@@ -183,6 +207,8 @@ int main()
 		if (iResult > 0)
 		{
 			std::cout << "Bytes received: " << iResult << '\n';
+			recvbuf[iResult] = 0;
+			std:: cout << recvbuf << '\n';
 		}
 		else if (iResult == 0)
 		{

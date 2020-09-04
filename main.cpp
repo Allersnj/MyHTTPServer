@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <algorithm>
+#include <fstream>
+#include <filesystem>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -74,46 +76,129 @@ SOCKET getListenSocket()
 	return ListenSocket;
 }
 
+/**
+ * Helper to get the content type of a response based on the extension of a file.
+ * @param file the path to the file being sent.
+ */
+std::string getContentType(const std::filesystem::path& file)
+{
+	std::string ext = file.extension().string();
+	if (ext == ".txt")
+	{
+		return "text/plain;charset=UTF-8";
+	}
+	else if (ext == ".html")
+	{
+		return "text/html;charset=UTF-8";
+	}
+	return "text/plain";
+}
 
 /** This function is what handles each client's commands.
  * @param ClientSocket the socket representing the connection to the client.
  */
 void serve(SOCKET ClientSocket)
 {
-	char recvbuf[DEFAULT_BUFLEN];
+	std::array<char, DEFAULT_BUFLEN> recvbuf{0};
 	int iResult, iSendResult;
 	std::string command;
 	std::string resource;
 	std::string version;
 	std::string resultStr;
+	std::string body;
 	bool quit = false;
+	char junk;
 	
-	iResult = recv(ClientSocket, recvbuf, DEFAULT_BUFLEN, 0);
-	if (iResult > 0)
+	do
 	{
-		std::cout << "Bytes received: " << iResult << '\n';
-		recvbuf[iResult] = 0; // Always null-terminate your strings.
-		std::stringstream stream{recvbuf};
-		stream >> command >> resource >> version;
-		std::cout << "Command: " << command << '\n';
-		std::cout << "Resource: " << resource << '\n';
-		std::cout << "Version: " << version << '\n';
-		if (std::find(commands.begin(), commands.end(), command) == commands.end())
+		iResult = recv(ClientSocket, recvbuf.data(), DEFAULT_BUFLEN, 0);
+		if (iResult > 0)
 		{
-			std::cout << "Unknown command: " << command << '\n';
+			std::cout << "Bytes received: " << iResult << '\n';
+			std::stringstream stream{recvbuf.data()};
+			stream >> command >> resource >> version;
+			std::cout << "Command: " << command << '\n';
+			std::cout << "Resource: " << resource << '\n';
+			std::cout << "Version: " << version << '\n';
+			if (std::find(commands.begin(), commands.end(), command) == commands.end())
+			{
+				std::cout << "Unknown command: " << command << '\n';
+			}	
+			stream >> std::ws;
+			while (!stream.eof() && stream.peek() != '\r')
+			{
+				std::array<char, DEFAULT_BUFLEN> temp;
+				stream.getline(temp.data(), DEFAULT_BUFLEN, ':');
+				stream >> std::ws;
+				std::cout << temp.data();
+				stream.getline(temp.data(), DEFAULT_BUFLEN, '\r');
+				std::cout << ": " << temp.data() << '\n';
+				stream.get(junk);
+			}
+			if (stream.fail())
+			{
+				resultStr = "HTTP/1.1 400 Bad Request\r\n";
+				iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+				if (iSendResult == SOCKET_ERROR)
+				{
+					std::cout << "send failed: " << WSAGetLastError() << '\n';
+					closesocket(ClientSocket);
+					WSACleanup();
+					return;
+				}
+				continue;
+			}
+			
+			stream >> std::ws;
+			
+			if (command == "GET")
+			{
+				std::filesystem::path filepath = "www" + resource;
+				std::ifstream file(filepath);
+				if (file)
+				{
+					std::ostringstream fileStream;
+					fileStream << file.rdbuf();
+					std::string responseBody = fileStream.str();
+					std::string type = getContentType(filepath);
+					
+					resultStr = "HTTP/1.0 200 OK\r\nContent-Length: " + std::to_string(responseBody.length()) + "\r\nServer: Custom C++ (Windows)\r\nContent-Type: " + type + "\r\n\r\n" + fileStream.str();
+					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+					if (iSendResult == SOCKET_ERROR)
+					{
+						std::cout << "send failed: " << WSAGetLastError() << '\n';
+						closesocket(ClientSocket);
+						WSACleanup();
+						return;
+					}
+				}
+				else
+				{
+					resultStr = "HTTP/1.0 404 File Not Found\r\n";
+					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
+					if (iSendResult == SOCKET_ERROR)
+					{
+						std::cout << "send failed: " << WSAGetLastError() << '\n';
+						closesocket(ClientSocket);
+						WSACleanup();
+						return;
+					}
+				}
+			}
 		}
-	}
-	else if (iResult == 0)
-	{
-		std::cout << "Connection closing...\n";
-	}
-	else
-	{
-		std::cout << "recv failed: " << WSAGetLastError() << '\n';
-		closesocket(ClientSocket);
-		WSACleanup();
-		return;
-	}
+		else if (iResult == 0)
+		{
+			std::cout << "Connection closing...\n";
+		}
+		else
+		{
+			std::cout << "recv failed: " << WSAGetLastError() << '\n';
+			closesocket(ClientSocket);
+			WSACleanup();
+			return;
+		}
+	} while (iResult > 0);
+	
 	
 	iResult = shutdown(ClientSocket, SD_BOTH);
 	if (iResult == SOCKET_ERROR)

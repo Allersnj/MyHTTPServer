@@ -79,6 +79,8 @@ $(function() {
 <code>#include &lt;thread&gt;</code><br />
 <code>#include &lt;mutex&gt;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;filesystem&gt;</code><br />
 <code>#include &lt;winsock2.h&gt;</code><br />
 <code>#include &lt;ws2tcpip.h&gt;</code><br />
 </div><table class="memberdecls">
@@ -95,6 +97,8 @@ Macros</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ad0c9f85a9929cd47bbc2a5c950f761d9"><td class="memItemLeft" align="right" valign="top">SOCKET&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#ad0c9f85a9929cd47bbc2a5c950f761d9">getListenSocket</a> ()</td></tr>
 <tr class="separator:ad0c9f85a9929cd47bbc2a5c950f761d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac79d985f4d966c195dcd2b5efdddd39f"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#ac79d985f4d966c195dcd2b5efdddd39f">getContentType</a> (const std::filesystem::path &amp;file)</td></tr>
+<tr class="separator:ac79d985f4d966c195dcd2b5efdddd39f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8e17bad09fd4e623bf905e157c38d38"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#ab8e17bad09fd4e623bf905e157c38d38">serve</a> (SOCKET ClientSocket)</td></tr>
 <tr class="separator:ab8e17bad09fd4e623bf905e157c38d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
@@ -109,6 +113,30 @@ Variables</h2></td></tr>
 <div class="textblock"><p>The source for the main server. </p>
 <p>This is where the magic happens. The main loop for the server and some helper functions are in here. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="ac79d985f4d966c195dcd2b5efdddd39f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac79d985f4d966c195dcd2b5efdddd39f">&#9670;&nbsp;</a></span>getContentType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string getContentType </td>
+          <td>(</td>
+          <td class="paramtype">const std::filesystem::path &amp;&#160;</td>
+          <td class="paramname"><em>file</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Helper to get the content type of a response based on the extension of a file. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file</td><td>the path to the file being sent. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ad0c9f85a9929cd47bbc2a5c950f761d9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad0c9f85a9929cd47bbc2a5c950f761d9">&#9670;&nbsp;</a></span>getListenSocket()</h2>
 
