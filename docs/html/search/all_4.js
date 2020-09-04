@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['readme_6',['README',['../md__r_e_a_d_m_e.html',1,'']]]
+  ['send_5fcommand_5',['send_command',['../client_8cpp.html#ad7794ee084ffc0ebb5963a9251a18aea',1,'client.cpp']]],
+  ['serve_6',['serve',['../main_8cpp.html#ab8e17bad09fd4e623bf905e157c38d38',1,'main.cpp']]]
 ];

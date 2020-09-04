@@ -85,11 +85,14 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_PORT</b>&#160;&#160;&#160;&quot;8080&quot;</td></tr>
 <tr class="separator:a16b710f592bf8f7900666392adc444dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5261516a174b035b084a9ae06dc85730"><td class="memItemLeft" align="right" valign="top"><a id="a5261516a174b035b084a9ae06dc85730"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_BUFLEN</b>&#160;&#160;&#160;512</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_BUFLEN</b>&#160;&#160;&#160;1024</td></tr>
 <tr class="separator:a5261516a174b035b084a9ae06dc85730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ad7794ee084ffc0ebb5963a9251a18aea"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8cpp.html#ad7794ee084ffc0ebb5963a9251a18aea">send_command</a> (SOCKET ConnectSocket, std::string_view command)</td></tr>
+<tr class="memdesc:ad7794ee084ffc0ebb5963a9251a18aea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends a command to the server.  <a href="client_8cpp.html#ad7794ee084ffc0ebb5963a9251a18aea">More...</a><br /></td></tr>
+<tr class="separator:ad7794ee084ffc0ebb5963a9251a18aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeee4a4b6a95b8a5dcb3a9a0fd83e0a53"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="client_8cpp.html#aeee4a4b6a95b8a5dcb3a9a0fd83e0a53">test_command</a> (SOCKET ConnectSocket, std::string_view command, std::string_view response)</td></tr>
 <tr class="memdesc:aeee4a4b6a95b8a5dcb3a9a0fd83e0a53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tests a command against the server.  <a href="client_8cpp.html#aeee4a4b6a95b8a5dcb3a9a0fd83e0a53">More...</a><br /></td></tr>
 <tr class="separator:aeee4a4b6a95b8a5dcb3a9a0fd83e0a53"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -105,6 +108,43 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clien
 <div class="textblock"><p>An automated client for testing the server. </p>
 <p>This client serves as a tester for the server. It has some utility functions for this purpose. Main runs the tests. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="ad7794ee084ffc0ebb5963a9251a18aea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7794ee084ffc0ebb5963a9251a18aea">&#9670;&nbsp;</a></span>send_command()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int send_command </td>
+          <td>(</td>
+          <td class="paramtype">SOCKET&#160;</td>
+          <td class="paramname"><em>ConnectSocket</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>command</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sends a command to the server. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ConnectSocket</td><td>The socket representing the connection to the server. </td></tr>
+    <tr><td class="paramname">command</td><td>The command to send. Basically a test that doesn't expect to receive anything back. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a112c24091a503387bbec7a1ef9425964"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a112c24091a503387bbec7a1ef9425964">&#9670;&nbsp;</a></span>test_command() <span class="overload">[1/2]</span></h2>
 

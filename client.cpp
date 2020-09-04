@@ -6,13 +6,33 @@
 #include <ws2tcpip.h>
 
 #define DEFAULT_PORT "8080"
-#define DEFAULT_BUFLEN 512
+#define DEFAULT_BUFLEN 1024
 
 /** @file client.cpp
  *  @brief An automated client for testing the server.
  *
  *  This client serves as a tester for the server. It has some utility functions for this purpose. Main runs the tests.
  */
+ 
+ 
+ /**
+  * @brief Sends a command to the server.
+  * @param ConnectSocket The socket representing the connection to the server.
+  * @param command The command to send.
+  * Basically a test that doesn't expect to receive anything back.
+  */
+int send_command(SOCKET ConnectSocket, std::string_view command)
+{
+	char recvbuf[DEFAULT_BUFLEN];
+	std::string testResponse;
+	int iResult = send(ConnectSocket, command.data(), command.length(), 0);
+	if (iResult == SOCKET_ERROR)
+	{
+		std::cout << "send failed with error: " << WSAGetLastError() << '\n';
+		return iResult;
+	}
+	return iResult;
+}
  
  /**
   * @brief Tests a command against the server.
@@ -138,63 +158,7 @@ int main()
 	
 	// Run tests here
 	
-	iResult = test_command(ConnectSocket, "GET red\n", "ANSWER A color\r\n");
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = test_command(ConnectSocket, "ALL\n", {"puppy: A young dog\r\n", "red: A color\r\n"});
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = send(ConnectSocket, "CLEAR\n", 6, 0);
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = test_command(ConnectSocket, "ALL\n", "Dictionary is empty\r\n");
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = send(ConnectSocket, "SET blue Another color\n", 23, 0);
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = test_command(ConnectSocket, "GET blue\n", "ANSWER Another color\r\n");
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = test_command(ConnectSocket, "blah\n", "ERROR unknown command\r\n");
-	if (iResult == SOCKET_ERROR)
-	{
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return 1;
-	}
-	
-	iResult = test_command(ConnectSocket, "QUIT\n", "Goodbye!\r\n");
+	iResult = send_command(ConnectSocket, "GET / HTTP/1.1\r\n");
 	if (iResult == SOCKET_ERROR)
 	{
 		closesocket(ConnectSocket);

@@ -78,7 +78,7 @@ $(function() {
 <code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;thread&gt;</code><br />
 <code>#include &lt;mutex&gt;</code><br />
-<code>#include &lt;map&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;winsock2.h&gt;</code><br />
 <code>#include &lt;ws2tcpip.h&gt;</code><br />
 </div><table class="memberdecls">
@@ -88,7 +88,7 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_PORT</b>&#160;&#160;&#160;&quot;8080&quot;</td></tr>
 <tr class="separator:a16b710f592bf8f7900666392adc444dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5261516a174b035b084a9ae06dc85730"><td class="memItemLeft" align="right" valign="top"><a id="a5261516a174b035b084a9ae06dc85730"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_BUFLEN</b>&#160;&#160;&#160;512</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_BUFLEN</b>&#160;&#160;&#160;1024</td></tr>
 <tr class="separator:a5261516a174b035b084a9ae06dc85730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -102,10 +102,9 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a8d8522fbc85b736af23bca0e1bccb229"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#a8d8522fbc85b736af23bca0e1bccb229">dictionary</a></td></tr>
-<tr class="separator:a8d8522fbc85b736af23bca0e1bccb229"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aabd9dcad69cb8d273d2883ed0cb023e1"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8cpp.html#aabd9dcad69cb8d273d2883ed0cb023e1">dictionary_mutex</a></td></tr>
-<tr class="separator:aabd9dcad69cb8d273d2883ed0cb023e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9ab4b31444e24900bc1b25af57f9aab"><td class="memItemLeft" align="right" valign="top"><a id="aa9ab4b31444e24900bc1b25af57f9aab"></a>
+const std::array&lt; std::string, 8 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>commands</b> {&quot;GET&quot;, &quot;PUT&quot;, &quot;HEAD&quot;, &quot;POST&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;, &quot;TRACE&quot;, &quot;CONNECT&quot;}</td></tr>
+<tr class="separator:aa9ab4b31444e24900bc1b25af57f9aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The source for the main server. </p>
@@ -143,7 +142,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This is main, man. It sets up initial values for the dictionary, intializes and cleans up Winsock, and starts the loop to accept connections. </p>
+<p>This is main, man. It intializes and cleans up Winsock and starts the loop to accept connections. </p>
 
 </div>
 </div>
@@ -168,37 +167,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="a8d8522fbc85b736af23bca0e1bccb229"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d8522fbc85b736af23bca0e1bccb229">&#9670;&nbsp;</a></span>dictionary</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::map&lt;std::string, std::string&gt; dictionary</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>This is the dictionary to hold definitions for access by clients. </p>
-
-</div>
-</div>
-<a id="aabd9dcad69cb8d273d2883ed0cb023e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aabd9dcad69cb8d273d2883ed0cb023e1">&#9670;&nbsp;</a></span>dictionary_mutex</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::mutex dictionary_mutex</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>This mutex protects the dictionary from simultaneous access. </p>
 
 </div>
 </div>

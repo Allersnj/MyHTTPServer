@@ -3,12 +3,12 @@
 #include <sstream>
 #include <thread>
 #include <mutex>
-#include <map>
+#include <algorithm>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 #define DEFAULT_PORT "8080"
-#define DEFAULT_BUFLEN 512
+#define DEFAULT_BUFLEN 1024
 
 /** @file main.cpp
  *  @brief The source for the main server.
@@ -17,15 +17,10 @@
  */
 
 
-/** 
- * This is the dictionary to hold definitions for access by clients.
+/*
+ * An array of known HTTP comands.
  */
-std::map<std::string, std::string> dictionary;
-
-/** 
- * This mutex protects the dictionary from simultaneous access.
- */
-std::mutex dictionary_mutex;
+const std::array<std::string, 8> commands{"GET", "PUT", "HEAD", "POST", "DELETE", "OPTIONS", "TRACE", "CONNECT"};
 
 /**
  * This function contains the boilerplate Winsock code to create a socket that listens for clients.
@@ -88,144 +83,46 @@ void serve(SOCKET ClientSocket)
 	char recvbuf[DEFAULT_BUFLEN];
 	int iResult, iSendResult;
 	std::string command;
+	std::string resource;
+	std::string version;
 	std::string resultStr;
 	bool quit = false;
 	
-	do
+	iResult = recv(ClientSocket, recvbuf, DEFAULT_BUFLEN, 0);
+	if (iResult > 0)
 	{
-		iResult = recv(ClientSocket, recvbuf, DEFAULT_BUFLEN, 0);
-		
-		if (iResult > 0)
+		std::cout << "Bytes received: " << iResult << '\n';
+		recvbuf[iResult] = 0; // Always null-terminate your strings.
+		std::stringstream stream{recvbuf};
+		stream >> command >> resource >> version;
+		std::cout << "Command: " << command << '\n';
+		std::cout << "Resource: " << resource << '\n';
+		std::cout << "Version: " << version << '\n';
+		if (std::find(commands.begin(), commands.end(), command) == commands.end())
 		{
-			std::cout << "Bytes received: " << iResult << '\n';
-			recvbuf[iResult] = 0; // Always null-terminate your strings.
-			std::stringstream stream{recvbuf};
-			// Make sure multiple commands from one recv are accounted for.
-			while (stream >> command)
-			{
-				if (command == "GET")
-				{
-					stream >> command;
-					if (dictionary.count(command))
-					{
-						const std::lock_guard<std::mutex> lock(dictionary_mutex);
-						resultStr = "ANSWER " + dictionary[command] + "\r\n";
-					}
-					else
-					{
-						resultStr = "ERROR can't find " + command + "\r\n";
-					}
-					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
-					if (iSendResult == SOCKET_ERROR)
-					{
-						std::cout << "send failed: " << WSAGetLastError() << '\n';
-						closesocket(ClientSocket);
-						WSACleanup();
-						return;
-					}
-					std::cout << "Bytes sent: " << iSendResult << '\n';
-				}
-				else if (command == "SET")
-				{
-					stream >> command;
-					stream.get();
-					stream.getline(recvbuf, DEFAULT_BUFLEN, '\n');
-					const std::lock_guard<std::mutex> lock(dictionary_mutex);
-					dictionary[command] = recvbuf;
-				}
-				else if (command == "CLEAR")
-				{
-					const std::lock_guard<std::mutex> lock(dictionary_mutex);
-					dictionary.clear();
-				}
-				else if (command == "ALL")
-				{
-					const std::lock_guard<std::mutex> lock(dictionary_mutex);
-					if (dictionary.size() == 0)
-					{
-						resultStr = "Dictionary is empty\r\n";
-						iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
-						if (iSendResult == SOCKET_ERROR)
-						{
-							std::cout << "send failed: " << WSAGetLastError() << '\n';
-							closesocket(ClientSocket);
-							WSACleanup();
-							return;
-						}
-						std::cout << "Bytes sent: " << iSendResult << '\n';
-					}
-					else
-					{
-						for (const auto& [key, value] : dictionary)
-						{
-							resultStr = key + ": " + value + "\r\n";
-							iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
-							if (iSendResult == SOCKET_ERROR)
-							{
-								std::cout << "send failed: " << WSAGetLastError() << '\n';
-								closesocket(ClientSocket);
-								WSACleanup();
-								return;
-							}
-							std::cout << "Bytes sent: " << iSendResult << '\n';
-						}
-					}
-				}
-				else if (command == "")
-				{
-					continue;
-				}
-				else if (command == "QUIT")
-				{
-					resultStr = "Goodbye!\r\n";
-					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
-					if (iSendResult == SOCKET_ERROR)
-					{
-						std::cout << "send failed: " << WSAGetLastError() << '\n';
-						closesocket(ClientSocket);
-						WSACleanup();
-						return;
-					}
-					iResult = shutdown(ClientSocket, SD_BOTH);
-					if (iResult == SOCKET_ERROR)
-					{
-						std::cout << "shutdown failed with error: " << WSAGetLastError() << '\n';
-						closesocket(ClientSocket);
-						WSACleanup();
-						return;
-					}
-					quit = true;
-					break;
-				}
-				else
-				{
-					resultStr = "ERROR unknown command\r\n";
-					iSendResult = send(ClientSocket, resultStr.c_str(), resultStr.length(), 0);
-					if (iSendResult == SOCKET_ERROR)
-					{
-						std::cout << "send failed: " << WSAGetLastError() << '\n';
-						closesocket(ClientSocket);
-						WSACleanup();
-						return;
-					}
-					std::cout << "Bytes sent: " << iSendResult << '\n';
-				}
-				command = "";
-			}
+			std::cout << "Unknown command: " << command << '\n';
 		}
-		else if (iResult == 0)
-		{
-			std::cout << "Connection closing...\n";
-		}
-		else
-		{
-			std::cout << "recv failed: " << WSAGetLastError() << '\n';
-			closesocket(ClientSocket);
-			WSACleanup();
-			return;
-		}
-			
-	} while (iResult > 0 && !quit);
+	}
+	else if (iResult == 0)
+	{
+		std::cout << "Connection closing...\n";
+	}
+	else
+	{
+		std::cout << "recv failed: " << WSAGetLastError() << '\n';
+		closesocket(ClientSocket);
+		WSACleanup();
+		return;
+	}
+	
+	iResult = shutdown(ClientSocket, SD_BOTH);
+	if (iResult == SOCKET_ERROR)
+	{
+		std::cout << "shutdown failed with error: " << WSAGetLastError() << '\n';
+		closesocket(ClientSocket);
+		WSACleanup();
+		return;
+	}
 	
 	std::cout << "Connection closed.\n";
 	
@@ -234,13 +131,10 @@ void serve(SOCKET ClientSocket)
 
 
 /** 
- * This is main, man. It sets up initial values for the dictionary, intializes and cleans up Winsock, and starts the loop to accept connections.
+ * This is main, man. It intializes and cleans up Winsock and starts the loop to accept connections.
  */
 int main()
-{
-	dictionary["red"] = "A color";
-	dictionary["puppy"] = "A young dog";
-	
+{	
 	WSADATA wsaData;
 	int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 	if (iResult != 0)
