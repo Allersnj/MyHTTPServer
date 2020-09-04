@@ -17,7 +17,7 @@
  */
 
 
-/*
+/**
  * An array of known HTTP comands.
  */
 const std::array<std::string, 8> commands{"GET", "PUT", "HEAD", "POST", "DELETE", "OPTIONS", "TRACE", "CONNECT"};
