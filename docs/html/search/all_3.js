@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['readme_6',['README',['../md__r_e_a_d_m_e.html',1,'']]]
+  ['host_7',['host',['../struct_config.html#aff7a38d3fada71d2d0aa7e1b01c43ea7',1,'Config']]]
 ];

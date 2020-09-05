@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['test_5fcommand_17',['test_command',['../client_8cpp.html#aeee4a4b6a95b8a5dcb3a9a0fd83e0a53',1,'test_command(SOCKET ConnectSocket, std::string_view command, std::string_view response):&#160;client.cpp'],['../client_8cpp.html#a112c24091a503387bbec7a1ef9425964',1,'test_command(SOCKET ConnectSocket, std::string_view command, const std::vector&lt; std::string_view &gt; &amp;responses):&#160;client.cpp']]]
+  ['send_5fcommand_24',['send_command',['../client_8cpp.html#ad7794ee084ffc0ebb5963a9251a18aea',1,'client.cpp']]],
+  ['serve_25',['serve',['../main_8cpp.html#adb0231b866588762377af49e502f7bb1',1,'main.cpp']]]
 ];

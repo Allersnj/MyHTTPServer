@@ -5,7 +5,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+/** the port of the server to test. */
 #define DEFAULT_PORT "8080"
+/** the length of the receiving buffers. */
 #define DEFAULT_BUFLEN 1024
 
 /** @file client.cpp
@@ -147,7 +149,7 @@ int main()
 		break;
 	}
 	
-	freeaddrinfo(result);
+	//freeaddrinfo(result);
 	
 	if (ConnectSocket == INVALID_SOCKET)
 	{
@@ -166,6 +168,26 @@ int main()
 		return 1;
 	}
 	
+	for (ptr=result; ptr != NULL; ptr = ptr->ai_next)
+	{
+		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+		if (ConnectSocket == INVALID_SOCKET)
+		{
+			std::cout << "socket failed with error: " << WSAGetLastError() << '\n';
+			WSACleanup();
+			return 1;
+		}
+		
+		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if (iResult == SOCKET_ERROR)
+		{
+			closesocket(ConnectSocket);
+			ConnectSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
+	}
+	
 	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\n", "HTTP/1.0 200 OK\r\nContent-Length: 51\r\nServer: Custom C++ (Windows)\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n<h1>Testing...</h1>\n<a href=\"test.txt\">Click me</a>");
 	if (iResult == SOCKET_ERROR)
 	{
@@ -174,12 +196,52 @@ int main()
 		return 1;
 	}
 	
+	for (ptr=result; ptr != NULL; ptr = ptr->ai_next)
+	{
+		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+		if (ConnectSocket == INVALID_SOCKET)
+		{
+			std::cout << "socket failed with error: " << WSAGetLastError() << '\n';
+			WSACleanup();
+			return 1;
+		}
+		
+		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if (iResult == SOCKET_ERROR)
+		{
+			closesocket(ConnectSocket);
+			ConnectSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
+	}
+	
 	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\nthing1: thing2\r\n\r\n", "HTTP/1.0 200 OK\r\nContent-Length: 51\r\nServer: Custom C++ (Windows)\r\nContent-Type: text/html;charset=UTF-8\r\n\r\n<h1>Testing...</h1>\n<a href=\"test.txt\">Click me</a>");
 	if (iResult == SOCKET_ERROR)
 	{
 		closesocket(ConnectSocket);
 		WSACleanup();
 		return 1;
+	}
+	
+	for (ptr=result; ptr != NULL; ptr = ptr->ai_next)
+	{
+		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+		if (ConnectSocket == INVALID_SOCKET)
+		{
+			std::cout << "socket failed with error: " << WSAGetLastError() << '\n';
+			WSACleanup();
+			return 1;
+		}
+		
+		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if (iResult == SOCKET_ERROR)
+		{
+			closesocket(ConnectSocket);
+			ConnectSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
 	}
 	
 	iResult = test_command(ConnectSocket, "GET /test.html HTTP/1.1\r\nthing1 thing2\r\n\r\n", "HTTP/1.1 400 Bad Request\r\n");

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['send_5fcommand_15',['send_command',['../client_8cpp.html#ad7794ee084ffc0ebb5963a9251a18aea',1,'client.cpp']]],
-  ['serve_16',['serve',['../main_8cpp.html#ab8e17bad09fd4e623bf905e157c38d38',1,'main.cpp']]]
+  ['main_23',['main',['../client_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;client.cpp'],['../main_8cpp.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;main.cpp']]]
 ];

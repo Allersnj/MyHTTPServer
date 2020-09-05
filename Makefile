@@ -1,4 +1,4 @@
-CXXFLAGS = -isystem "C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0" -std=c++17
+CXXFLAGS = -isystem "C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0" -std=c++2a
 
 LDFLAGS = -L"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.18362.0\um\x64"
 
